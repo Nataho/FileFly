@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>File Upload</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="upload-box">
+        <h2>Upload a File</h2>
+        <form id="uploadForm" action="/upload" method="POST" enctype="multipart/form-data">
+            <input type="file" name="file" id="fileInput" required>
+            <progress id="progressBar" value="0" max="100"></progress>
+            <button type="submit" id="sendBtn">Upload</button>
+        </form>
+    </div>
+
+    <script>
+        const form = document.getElementById('uploadForm');
+        const progressBar = document.getElementById('progressBar');
+        const sendBtn = document.getElementById('sendBtn');
+
+        form.addEventListener('submit', function(e) {
+            e.preventDefault(); 
+            const formData = new FormData(form);
+
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', '/upload', true);
+
+            xhr.upload.onprogress = function(e) {
+                if (e.lengthComputable) {
+                    let percent = (e.loaded / e.total) * 100;
+                    progressBar.value = percent;
+                }
+            };
+
+            xhr.onload = function() {
+                if (xhr.status === 200) {
+                    progressBar.value = 100;
+                    sendBtn.textContent = "Send!";
+                    sendBtn.style.backgroundColor = "#28a745"; // green
+                }
+            };
+
+            xhr.send(formData);
+        });
+    </script>
+</body>
+</html>
