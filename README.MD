@@ -16,5 +16,8 @@ python app.py
 
 - go to your browser and open
 ```
-- http://localhost:5000
+http://localhost:5000
 ```
+
+- upload the file you want to upload and press "upload"
+it's that easy
