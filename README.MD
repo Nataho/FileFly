@@ -9,7 +9,7 @@ pip install flask
 ```
 
 # Use Case
-- run the python file
+- run the python file on your terminal
 ``` bash
 python app.py
 ```

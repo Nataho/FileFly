@@ -1,49 +1,97 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>File Upload</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <meta charset="UTF-8">
+  <title>File Upload</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <div class="upload-box">
-        <h2>Upload a File</h2>
-        <form id="uploadForm" action="/upload" method="POST" enctype="multipart/form-data">
-            <input type="file" name="file" id="fileInput" required>
-            <progress id="progressBar" value="0" max="100"></progress>
-            <button type="submit" id="sendBtn">Upload</button>
-        </form>
+  <div class="container">
+    <h1>Upload a File</h1>
+
+    <div id="drop-area">
+      <p>Drag & Drop a file here<br>or click to select</p>
+      <input type="file" id="fileElem" hidden>
     </div>
 
-    <script>
-        const form = document.getElementById('uploadForm');
-        const progressBar = document.getElementById('progressBar');
-        const sendBtn = document.getElementById('sendBtn');
+    <div id="file-info"></div>
 
-        form.addEventListener('submit', function(e) {
-            e.preventDefault(); 
-            const formData = new FormData(form);
+    <div class="progress-container">
+      <div id="progress-bar"></div>
+    </div>
 
-            const xhr = new XMLHttpRequest();
-            xhr.open('POST', '/upload', true);
+    <button id="upload-btn" disabled>Upload</button>
+  </div>
 
-            xhr.upload.onprogress = function(e) {
-                if (e.lengthComputable) {
-                    let percent = (e.loaded / e.total) * 100;
-                    progressBar.value = percent;
-                }
-            };
+  <script>
+    const dropArea = document.getElementById("drop-area");
+    const fileInput = document.getElementById("fileElem");
+    const fileInfo = document.getElementById("file-info");
+    const uploadBtn = document.getElementById("upload-btn");
+    const progressBar = document.getElementById("progress-bar");
 
-            xhr.onload = function() {
-                if (xhr.status === 200) {
-                    progressBar.value = 100;
-                    sendBtn.textContent = "Send!";
-                    sendBtn.style.backgroundColor = "#28a745"; // green
-                }
-            };
+    let currentFile = null;
 
-            xhr.send(formData);
-        });
-    </script>
+    // === Drag & Drop handling ===
+    ["dragenter", "dragover", "dragleave", "drop"].forEach(eventName => {
+      dropArea.addEventListener(eventName, e => e.preventDefault());
+      document.body.addEventListener(eventName, e => e.preventDefault());
+    });
+
+    dropArea.addEventListener("drop", e => {
+      const file = e.dataTransfer.files[0];
+      handleFile(file);
+    });
+
+    dropArea.addEventListener("click", () => fileInput.click());
+    fileInput.addEventListener("change", () => handleFile(fileInput.files[0]));
+
+    function handleFile(file) {
+      if (!file) return;
+      currentFile = file;
+      fileInfo.textContent = "Selected: " + file.name;
+      uploadBtn.disabled = false;
+      uploadBtn.className = "blue";
+    }
+
+    // === Upload logic ===
+    uploadBtn.addEventListener("click", () => {
+      if (!currentFile) return;
+
+      uploadBtn.disabled = true;
+      uploadBtn.className = "green";
+      uploadBtn.textContent = "Uploading...";
+
+      const formData = new FormData();
+      formData.append("file", currentFile);
+
+      const xhr = new XMLHttpRequest();
+      xhr.open("POST", "/upload");
+
+      xhr.upload.onprogress = (e) => {
+        if (e.lengthComputable) {
+          const percent = (e.loaded / e.total) * 100;
+          progressBar.style.width = percent + "%";
+        }
+      };
+
+      xhr.onload = () => {
+        if (xhr.status === 200) {
+          uploadBtn.className = "yellow";
+          uploadBtn.textContent = "Sent!";
+          fileInfo.textContent = "";
+          currentFile = null;
+          setTimeout(() => {
+            progressBar.style.width = "0%"; // reset
+          }, 800);
+        } else {
+          uploadBtn.className = "red";
+          uploadBtn.textContent = "Error!";
+        }
+      };
+
+      xhr.send(formData);
+    });
+  </script>
 </body>
 </html>

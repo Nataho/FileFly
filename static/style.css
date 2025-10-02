@@ -1,74 +1,74 @@
 body {
-    margin: 0;
-    font-family: 'Segoe UI', sans-serif;
-    background-color: #0a192f; /* dark navy */
-    color: #f0f4f8;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
+  background-color: #0a1a33;
+  color: white;
+  font-family: Arial, sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  margin: 0;
 }
 
-.upload-box {
-    background-color: #112d4e; /* softer blue */
-    padding: 40px;
-    border-radius: 16px;
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
-    text-align: center;
-    width: 500px;   /* much wider rectangle */
+.container {
+  text-align: center;
 }
 
-h2 {
-    margin-bottom: 25px;
-    color: #f0f4f8;
+#drop-area {
+  border: 2px dashed #4da6ff;
+  border-radius: 10px;
+  padding: 60px;
+  width: 450px;
+  margin: 20px auto;
+  cursor: pointer;
+  background-color: #142850;
+  transition: background-color 0.3s;
 }
 
-input[type="file"] {
-    margin-bottom: 25px;
-    padding: 12px;
-    background: #1b3b6f;
-    border: none;
-    border-radius: 8px;
-    color: #f0f4f8;
-    width: 100%;
-    cursor: pointer;
+#drop-area:hover {
+  background-color: #1c3660;
 }
 
-progress {
-    width: 100%;        /* full width bar */
-    height: 25px;       /* taller bar */
-    margin: 20px 0;
-    border-radius: 8px;
-    overflow: hidden;
-    appearance: none;
+#file-info {
+  margin: 15px;
+  font-size: 14px;
 }
 
-progress::-webkit-progress-bar {
-    background-color: #1b3b6f;
+.progress-container {
+  width: 450px;
+  height: 20px;
+  background: #333;
+  border-radius: 10px;
+  overflow: hidden;
+  margin: 15px auto;
 }
 
-progress::-webkit-progress-value {
-    background-color: #00b4d8;
-    transition: width 0.3s ease;
-}
-
-progress::-moz-progress-bar {
-    background-color: #00b4d8;
+#progress-bar {
+  height: 100%;
+  width: 0%;
+  background: #4da6ff;
+  transition: width 0.2s;
 }
 
 button {
-    padding: 12px 25px;
-    border: none;
-    border-radius: 8px;
-    background-color: #0077b6;
-    color: white;
-    font-weight: bold;
-    font-size: 16px;
-    cursor: pointer;
-    transition: 0.3s;
-    width: 100%;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.1s;
 }
 
-button:hover {
-    background-color: #0096c7;
+button:disabled {
+  background-color: #666;
+  cursor: not-allowed;
+}
+
+/* Button states */
+button.blue { background-color: #007bff; color: white; }
+button.green { background-color: #28a745; color: white; }
+button.yellow { background-color: #ffc107; color: black; }
+button.red { background-color: #dc3545; color: white; }
+
+button:not(:disabled):active {
+  transform: scale(0.97);
 }
