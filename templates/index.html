@@ -2,96 +2,41 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>File Upload</title>
+  <title>Upload Media</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-  <div class="container">
-    <h1>Upload a File</h1>
-
+  <div class="upload-container">
     <div id="drop-area">
-      <p>Drag & Drop a file here<br>or click to select</p>
-      <input type="file" id="fileElem" hidden>
+      <p>Drag & Drop a file here</p>
+      <input type="file" id="fileElem" accept="image/*,video/*" hidden>
     </div>
-
-    <div id="file-info"></div>
-
-    <div class="progress-container">
-      <div id="progress-bar"></div>
-    </div>
-
-    <button id="upload-btn" disabled>Upload</button>
   </div>
 
-  <script>
-    const dropArea = document.getElementById("drop-area");
-    const fileInput = document.getElementById("fileElem");
-    const fileInfo = document.getElementById("file-info");
-    const uploadBtn = document.getElementById("upload-btn");
-    const progressBar = document.getElementById("progress-bar");
+  <!-- Popup overlay -->
+  <div id="overlay" class="overlay hidden">
+    <div class="popup">
+      <div class="popup-left">
+        <div id="preview"></div>
+      </div>
+      <div class="popup-right">
+        <label>Sender Name:</label>
+        <input type="text" id="sender" placeholder="Enter your name (default: noname)">
+        <br><br>
+        <label>File Name:</label>
+        <div class="filename-edit">
+          <input type="text" id="filename-base">
+          <span id="filename-ext"></span>
+        </div>
+        <br><br>
+        <button id="uploadBtn" disabled>Upload</button>
+        <div id="progress-container" class="hidden">
+          <div id="progress-bar"></div>
+        </div>
+      </div>
+    </div>
+  </div>
 
-    let currentFile = null;
-
-    // === Drag & Drop handling ===
-    ["dragenter", "dragover", "dragleave", "drop"].forEach(eventName => {
-      dropArea.addEventListener(eventName, e => e.preventDefault());
-      document.body.addEventListener(eventName, e => e.preventDefault());
-    });
-
-    dropArea.addEventListener("drop", e => {
-      const file = e.dataTransfer.files[0];
-      handleFile(file);
-    });
-
-    dropArea.addEventListener("click", () => fileInput.click());
-    fileInput.addEventListener("change", () => handleFile(fileInput.files[0]));
-
-    function handleFile(file) {
-      if (!file) return;
-      currentFile = file;
-      fileInfo.textContent = "Selected: " + file.name;
-      uploadBtn.disabled = false;
-      uploadBtn.className = "blue";
-    }
-
-    // === Upload logic ===
-    uploadBtn.addEventListener("click", () => {
-      if (!currentFile) return;
-
-      uploadBtn.disabled = true;
-      uploadBtn.className = "green";
-      uploadBtn.textContent = "Uploading...";
-
-      const formData = new FormData();
-      formData.append("file", currentFile);
-
-      const xhr = new XMLHttpRequest();
-      xhr.open("POST", "/upload");
-
-      xhr.upload.onprogress = (e) => {
-        if (e.lengthComputable) {
-          const percent = (e.loaded / e.total) * 100;
-          progressBar.style.width = percent + "%";
-        }
-      };
-
-      xhr.onload = () => {
-        if (xhr.status === 200) {
-          uploadBtn.className = "yellow";
-          uploadBtn.textContent = "Sent!";
-          fileInfo.textContent = "";
-          currentFile = null;
-          setTimeout(() => {
-            progressBar.style.width = "0%"; // reset
-          }, 800);
-        } else {
-          uploadBtn.className = "red";
-          uploadBtn.textContent = "Error!";
-        }
-      };
-
-      xhr.send(formData);
-    });
-  </script>
+  <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>

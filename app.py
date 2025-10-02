@@ -40,20 +40,25 @@ def index():
 def upload():
     if "file" not in request.files:
         return jsonify({"success": False, "error": "No file part"}), 400
+    
     file = request.files["file"]
+    sender = request.form.get("sender", "noname") or "noname"
+
     if file.filename == "":
         return jsonify({"success": False, "error": "No selected file"}), 400
 
-    # Log "sending..."
-    print(f"{Colors['cyan']}[SENDING...] {Colors['white']}Uploading file: {Colors['yellow']}{file.filename}{RESET}")
+    # Create sender folder if not exists
+    sender_folder = os.path.join(UPLOAD_FOLDER, sender)
+    os.makedirs(sender_folder, exist_ok=True)
 
-    # Save file
-    file.save(os.path.join(UPLOAD_FOLDER, file.filename))
+    filepath = os.path.join(sender_folder, file.filename)
+    file.save(filepath)
 
-    # Log "sent!"
-    print(f"{Colors['bright_green']}[SENT!] {Colors['yellow']}{file.filename}{RESET}")
+    # print(f"{Colors['cyan']}[SENDING...] {Colors['white']}File: {Colors['yellow']}{file.filename}{RESET}")
+    print(f"{Colors['bright_green']}[RECEIVED!] {Colors['yellow']}{file.filename}{Colors['white']} by {Colors['bright_purple']}{sender}{RESET}")
 
     return jsonify({"success": True})
+
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
