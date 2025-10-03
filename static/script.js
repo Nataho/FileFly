@@ -25,25 +25,43 @@ dropArea.addEventListener("drop", (e) => {
   handleFile(e.dataTransfer.files[0]);
 });
 
+// Click on drop area = open file picker
+dropArea.addEventListener("click", () => {
+  fileElem.click();
+});
+
+// When file chosen via picker
+fileElem.addEventListener("change", (e) => {
+  handleFile(e.target.files[0]);
+});
+
 // Handle file
 function handleFile(file) {
   if (!file) return;
   selectedFile = file;
 
-  // Preview
+  // Reset preview
   preview.innerHTML = "";
+
+  // Only preview images or videos
   if (file.type.startsWith("image/")) {
     const img = document.createElement("img");
     img.src = URL.createObjectURL(file);
+    img.style.maxWidth = "100%";
+    img.style.maxHeight = "100%";
     preview.appendChild(img);
   } else if (file.type.startsWith("video/")) {
     const video = document.createElement("video");
     video.src = URL.createObjectURL(file);
     video.controls = true;
+    video.style.maxWidth = "100%";
+    video.style.maxHeight = "100%";
     preview.appendChild(video);
   } else {
-    alert("Only images and videos can be previewed.");
-    return;
+    // For other files, just show the filename
+    const info = document.createElement("p");
+    info.textContent = "File selected: " + file.name;
+    preview.appendChild(info);
   }
 
   // Filename editing
@@ -58,6 +76,7 @@ function handleFile(file) {
   uploadBtn.classList.add("enabled");
   uploadBtn.disabled = false;
 }
+
 
 // Upload
 uploadBtn.addEventListener("click", () => {

@@ -1,3 +1,6 @@
 # do not add asdf
 uploads/asdf/
 run.sh
+build/
+dist/
+app.spec
