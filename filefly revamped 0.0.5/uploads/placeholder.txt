@@ -1,0 +1,5 @@
+this is only a placeholder, don't mind this file. you can remove this
+
+for developers.
+    - please do put a folder named "asdf" for it it inside the .gitignore
+    - put all the uploaded folders and files in there
