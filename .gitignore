@@ -1,6 +1,13 @@
 # do not add asdf
-uploads/asdf/
-run.sh
+# uploads/asdf/
+
+#compile
 build/
 dist/
 app.spec
+compile.sh
+
+#nataho
+dynamic/
+uploads/
+run.sh

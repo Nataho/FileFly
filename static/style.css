@@ -183,6 +183,96 @@ body {
   color: #4a90e2;
 }
 
+/* ==== Admin Dashboard ==== */
+.admin-wrap {
+  width: 90vw;
+  max-width: 1100px;
+  margin: 24px auto;
+  background: rgba(20,30,50,0.95);
+  padding: 18px;
+  border-radius: 10px;
+}
+
+.admin-wrap h1 {
+  color: #4a90e2;
+  text-align: center;
+}
+
+.cols {
+  display: flex;
+  gap: 12px;
+}
+
+.card {
+  flex: 1;
+  background: rgba(255,255,255,0.03);
+  padding: 12px;
+  border-radius: 8px;
+}
+
+.admin-wrap table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.admin-wrap th,
+.admin-wrap td {
+  padding: 8px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  text-align: left;
+}
+
+.admin-wrap th {
+  color: #a7c4e0;
+}
+
+button.small {
+  padding: 6px 8px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+}
+
+button.accept {
+  background: #2e8b57;
+  color: white;
+}
+
+button.deny {
+  background: #c94a4a;
+  color: white;
+}
+
+.muted {
+  color: #8892b0;
+  font-size: 0.9rem;
+}
+
+/* ==== Logs Table Scroll ==== */
+#logs-table-container {
+  max-height: 300px;   /* fixed height */
+  overflow-y: auto;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 6px;
+}
+
+#logs-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+#logs-table th,
+#logs-table td {
+  padding: 8px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  text-align: left;
+}
+
+#logs-table th {
+  color: #a7c4e0;
+}
+
+
 /* ==== Responsive ==== */
 @media (max-width: 768px) {
   #drop-area {
@@ -210,3 +300,4 @@ body {
   #drop-area { padding: 20px; height: 25vh; }
   #uploadBtn { font-size: 14px; padding: 10px; }
 }
+

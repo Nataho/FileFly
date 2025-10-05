@@ -21,7 +21,7 @@
       </div>
       <div class="popup-right">
         <label>Sender Name:</label>
-        <input type="text" id="sender" placeholder="Enter your name (default: noname)">
+        <input type="text" id="sender" placeholder="Enter your name (default: noname)" autocomplete="off">
         <br><br>
         <label>File Name:</label>
         <div class="filename-edit">
@@ -29,7 +29,13 @@
           <span id="filename-ext"></span>
         </div>
         <br><br>
+        
+        <!-- Pair button -->
+        <button id="pairBtn">Pair</button>
+        
+        <!-- Upload button -->
         <button id="uploadBtn" disabled>Upload</button>
+        
         <div id="progress-container" class="hidden">
           <div id="progress-bar"></div>
         </div>

@@ -2,6 +2,7 @@ const dropArea = document.getElementById("drop-area");
 const fileElem = document.getElementById("fileElem");
 const overlay = document.getElementById("overlay");
 const preview = document.getElementById("preview");
+const pairBtn = document.getElementById("pairBtn");
 const uploadBtn = document.getElementById("uploadBtn");
 const senderInput = document.getElementById("sender");
 const filenameBase = document.getElementById("filename-base");
@@ -10,6 +11,8 @@ const progressContainer = document.getElementById("progress-container");
 const progressBar = document.getElementById("progress-bar");
 
 let selectedFile = null;
+let paired = false;
+let statusPoller = null;
 
 // Drag and drop
 dropArea.addEventListener("dragover", (e) => {
@@ -35,7 +38,7 @@ fileElem.addEventListener("change", (e) => {
   handleFile(e.target.files[0]);
 });
 
-// Handle file
+// Handle file selection
 function handleFile(file) {
   if (!file) return;
   selectedFile = file;
@@ -43,7 +46,6 @@ function handleFile(file) {
   // Reset preview
   preview.innerHTML = "";
 
-  // Only preview images or videos
   if (file.type.startsWith("image/")) {
     const img = document.createElement("img");
     img.src = URL.createObjectURL(file);
@@ -58,7 +60,6 @@ function handleFile(file) {
     video.style.maxHeight = "100%";
     preview.appendChild(video);
   } else {
-    // For other files, just show the filename
     const info = document.createElement("p");
     info.textContent = "File selected: " + file.name;
     preview.appendChild(info);
@@ -73,11 +74,104 @@ function handleFile(file) {
 
   // Enable popup + upload button
   overlay.classList.remove("hidden");
-  uploadBtn.classList.add("enabled");
-  uploadBtn.disabled = false;
+  uploadBtn.className = "enabled"; // only use class
+  uploadBtn.textContent = "Upload";
 }
 
+// ========== pairing ==========
 
+// Check pair status on page load
+function checkStatusOnce() {
+  fetch("/status")
+    .then(res => res.json())
+    .then(data => {
+      if (data.paired && data.status === "approved") {
+        paired = true;
+        pairBtn.style.display = "none";
+        uploadBtn.style.display = "inline-block";
+        uploadBtn.disabled = false;
+      } else {
+        paired = false;
+        pairBtn.style.display = "inline-block";
+        uploadBtn.style.display = "none";
+      }
+    })
+    .catch(err => {
+      console.error("Status check failed:", err);
+      pairBtn.style.display = "inline-block";
+      uploadBtn.style.display = "none";
+    });
+}
+
+window.addEventListener("load", () => {
+  checkStatusOnce();
+});
+
+// Poll status (used after sending a pair request)
+function startStatusPoll(interval = 2000) {
+  if (statusPoller) return;
+  statusPoller = setInterval(() => {
+    fetch("/status")
+      .then(r => r.json())
+      .then(data => {
+        if (data.paired && data.status === "approved") {
+          // approved -> stop polling, enable upload
+          clearInterval(statusPoller);
+          statusPoller = null;
+          paired = true;
+          pairBtn.style.display = "none";
+          uploadBtn.style.display = "inline-block";
+          uploadBtn.disabled = false;
+          alert("✅ Pairing approved. You can now upload files.");
+        } else if (data.status === "denied") {
+          clearInterval(statusPoller);
+          statusPoller = null;
+          alert("❌ Pairing denied by admin.");
+        } // if pending, keep polling
+      })
+      .catch(err => {
+        console.error("status poll error", err);
+      });
+  }, interval);
+}
+
+// Pair request
+pairBtn.addEventListener("click", () => {
+  const sender = senderInput.value.trim() || "noname";
+
+  fetch("/pair", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ sender })
+  })
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
+        // server says already paired
+        paired = true;
+        pairBtn.style.display = "none";
+        uploadBtn.style.display = "inline-block";
+        uploadBtn.disabled = false;
+        alert("Already paired. You can upload now.");
+      } else if (data.pending) {
+        // pending created: start polling status
+        alert("Pair request sent. Waiting for admin approval...");
+        startStatusPoll(2000);
+      } else {
+        // if server returns denied or error
+        alert("Pairing failed: " + (data.message || "unknown"));
+      }
+    })
+    .catch(err => {
+      console.error("Pair error:", err);
+      alert("Error contacting server for pairing.");
+    });
+});
+
+// Ensure Upload button is hidden until paired
+uploadBtn.style.display = "none";
+
+// ========== upload ==========
 // Upload
 uploadBtn.addEventListener("click", () => {
   if (!selectedFile) return;
@@ -90,8 +184,7 @@ uploadBtn.addEventListener("click", () => {
   formData.append("sender", sender);
 
   // Button state
-  uploadBtn.classList.remove("enabled");
-  uploadBtn.classList.add("sending");
+  uploadBtn.className = "sending";
   uploadBtn.textContent = "Sending...";
 
   progressContainer.classList.remove("hidden");
@@ -109,22 +202,28 @@ uploadBtn.addEventListener("click", () => {
 
   xhr.onload = () => {
     if (xhr.status === 200) {
-      uploadBtn.classList.remove("sending");
-      uploadBtn.classList.add("sent");
+      uploadBtn.className = "sent";
       uploadBtn.textContent = "Sent!";
-      uploadBtn.disabled = true;
       selectedFile = null;
+
       setTimeout(() => {
         overlay.classList.add("hidden");
         preview.innerHTML = "";
         progressBar.style.width = "0";
         uploadBtn.textContent = "Upload";
-        uploadBtn.className = "";
-        uploadBtn.disabled = true;
+        uploadBtn.className = ""; // reset to neutral
       }, 1500);
     } else {
       alert("Upload failed.");
+      uploadBtn.className = "enabled";
+      uploadBtn.textContent = "Upload";
     }
+  };
+
+  xhr.onerror = () => {
+    alert("Upload failed (network error).");
+    uploadBtn.className = "enabled";
+    uploadBtn.textContent = "Upload";
   };
 
   xhr.send(formData);

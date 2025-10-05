@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>FileFly Admin</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div class="admin-wrap">
+    <h1>📜 FileFly — Admin</h1>
+
+    <div class="cols">
+      <div class="card">
+        <h3>Pending Pair Requests</h3>
+        <table id="pending-table">
+          <thead><tr><th>IP</th><th>MAC</th><th>Sender</th><th>Time</th><th>Action</th></tr></thead>
+          <tbody>
+            {% for ip,info in pending.items() %}
+            <tr data-ip="{{ ip }}">
+              <td>{{ ip }}</td>
+              <td>{{ info.mac or "—" }}</td>
+              <td>{{ info.sender or "—" }}</td>
+              <td>{{ info.time }}</td>
+              <td>
+                <button class="small accept" onclick="approvePair('{{ ip }}')">Approve</button>
+                <button class="small deny" onclick="denyPair('{{ ip }}')">Deny</button>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <h3>Approved Pairs</h3>
+        <table id="pairs-table">
+          <thead><tr><th>IP</th><th>MAC</th><th>Sender</th><th>Time</th></tr></thead>
+          <tbody>
+            {% for ip,info in pairs.items() %}
+            <tr>
+              <td>{{ ip }}</td>
+              <td>{{ info.mac or "—" }}</td>
+              <td>{{ info.sender or "—" }}</td>
+              <td>{{ info.time or "—" }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:14px;">
+    <h3>Recent Logs (last 100)</h3>
+    <div class="logs-container">
+    <table id="logs-table">
+        <thead>
+        <tr>
+            <th>Time</th>
+            <th>IP</th>
+            <th>MAC</th>
+            <th>Sender</th>
+            <th>Action</th>
+            <th>Details</th>
+        </tr>
+        </thead>
+        <tbody id="logs-body"></tbody>
+    </table>
+    </div>
+
+
+    <script>
+    function approvePair(ip) {
+        fetch("/admin/approve", {
+            method: "POST",
+            headers: {"Content-Type":"application/json"},
+            body: JSON.stringify({ip: ip})
+        }).then(r => r.json()).then(res => {
+            if (res.success) refreshPending(); // refresh instead of reload
+            else alert("Error: " + (res.error||"unknown"));
+        }).catch(e => { console.error(e); alert("Network error"); });
+    }
+
+    function denyPair(ip) {
+        fetch("/admin/deny", {
+            method: "POST",
+            headers: {"Content-Type":"application/json"},
+            body: JSON.stringify({ip: ip})
+        }).then(r => r.json()).then(res => {
+            if (res.success) refreshPending();
+            else alert("Error: " + (res.error||"unknown"));
+        }).catch(e => { console.error(e); alert("Network error"); });
+    }
+
+
+    function refreshLogs(){
+        fetch("/admin/logs")
+            .then(r => r.json())
+            .then(data => {
+                const tbody = document.getElementById("logs-body");
+                tbody.innerHTML = "";
+                data.forEach(log => {
+                    const row = document.createElement("tr");
+                    row.innerHTML = `
+                        <td>${log.time}</td>
+                        <td>${log.ip}</td>
+                        <td>${log.mac}</td>
+                        <td>${log.sender}</td>
+                        <td>${log.action}</td>
+                        <td>${log.details}</td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            })
+            .catch(err => console.error("Log fetch failed:", err));
+    }
+    // === Auto-refresh pending requests every 1s ===
+    function refreshPending() {
+        fetch("/admin/pending")
+            .then(r => r.json())
+            .then(data => {
+                const tbody = document.querySelector("#pending-table tbody");
+                tbody.innerHTML = "";
+                Object.keys(data).forEach(ip => {
+                    const info = data[ip];
+                    const row = document.createElement("tr");
+                    row.setAttribute("data-ip", ip);
+                    row.innerHTML = `
+                        <td>${ip}</td>
+                        <td>${info.mac || "—"}</td>
+                        <td>${info.sender || "—"}</td>
+                        <td>${info.time}</td>
+                        <td>
+                            <button class="small accept" onclick="approvePair('${ip}')">Approve</button>
+                            <button class="small deny" onclick="denyPair('${ip}')">Deny</button>
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            })
+            .catch(err => console.error("Pending fetch failed:", err));
+    }
+
+    // function refreshPairs(){
+    //   fetch("/admin/pairs")
+    // }
+
+    // === Auto-refresh logs every 250ms ===
+    
+    setInterval(() => {
+        refreshLogs();
+        refreshPending();
+    }, 250);
+
+    // run once at page load
+    // refreshPending();
+
+    // then update every second
+    // setInterval(refreshPending, 1000);
+    </script>
+
+</body>
+</html>
